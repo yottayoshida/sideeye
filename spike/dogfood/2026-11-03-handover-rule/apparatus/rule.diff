@@ -1,0 +1,708 @@
+diff --git a/build.zig b/build.zig
+index f07af9b..4eec707 100644
+--- a/build.zig
++++ b/build.zig
+@@ -621,6 +621,7 @@ pub fn build(b: *std.Build) void {
+         "src/recovery.zig",
+         "src/rerun.zig",
+         "src/interleave.zig",
++        "src/handover.zig",
+         // Not left to main.zig's import: a file imported for its declarations does not
+         // contribute its tests.
+         "src/supervise.zig",
+diff --git a/spike/acceptance.sh b/spike/acceptance.sh
+index 33f932a..33838be 100755
+--- a/spike/acceptance.sh
++++ b/spike/acceptance.sh
+@@ -4495,6 +4495,36 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+         grep -h -o -i '.\{0,60\}the shim.\{0,40\}' /tmp/acc-th-sup.txt /tmp/acc-th-sup.json 2>/dev/null | head -4 | sed 's/^/     | /'
+         fails=$((fails + 1))
+     fi
++    # #1000, ADR 0152: in a Go binary built without cgo, run with GOMAXPROCS=1, a hand-over the
++    # engine finds the earlier writer stopped for is taken as ordered; one where the earlier writer is
++    # in a watched call, or its next call is already waiting, refuses as before. toy-gohandover carries
++    # a Go build-info section saying CGO_ENABLED=0, so the gate is held without a Go toolchain.
++    go_turn() {   # go_turn <label> <mode> <env...>: exit status in gh_rc
++        gl=$1; gm=$2; shift 2
++        rm -rf /tmp/acc-gh/s /tmp/acc-gh/w && mkdir -p /tmp/acc-gh/s
++        TOY_STATE=/tmp/acc-gh/s env $no_switches "$@" "$SIDEEYE" explore --state /tmp/acc-gh/s \
++            --setup "$OUT/toy-gohandover init" --operation "$OUT/toy-gohandover $gm" --observe supervised \
++            --oracle /usr/bin/strace --work /tmp/acc-gh/w > "/tmp/acc-gh-$gl.txt" 2>&1
++        gh_rc=$?
++    }
++    mkdir -p /tmp/acc-gh
++    go_turn turns turns GOMAXPROCS=1
++    gh_turns=$gh_rc
++    go_turn turns-nomax turns
++    gh_nomax=$gh_rc
++    go_turn race race GOMAXPROCS=1
++    gh_race=$gh_rc
++    if [ "$gh_turns" = 0 ] && grep -q "taken as ordered because the earlier writer was stopped" /tmp/acc-gh-turns.txt \
++        && ! grep -q "multiple_threads_detected" /tmp/acc-gh-turns.txt \
++        && [ "$gh_nomax" = 2 ] && grep -q "^UNKNOWN  multiple_threads_detected$" /tmp/acc-gh-turns-nomax.txt \
++        && [ "$gh_race" = 2 ] && grep -q "^UNKNOWN  multiple_threads_detected$" /tmp/acc-gh-race.txt \
++        && grep -q " not ([1-9][0-9]* with another call waiting," /tmp/acc-gh-race.txt; then
++        echo "ok   a Go binary without cgo under GOMAXPROCS=1: threads taking turns are judged, threads writing at once refuse, and without GOMAXPROCS=1 the turns refuse"
++    else
++        echo "FAIL the supervised hand-over rule: turns exit $gh_turns, without GOMAXPROCS exit $gh_nomax, race exit $gh_race (wanted 0, 2, 2)"
++        for f in turns turns-nomax race; do grep -E "^(PASS|FAIL|UNKNOWN|SETUP)|hand-over" "/tmp/acc-gh-$f.txt" | head -3 | sed "s/^/     | $f: /"; done
++        fails=$((fails + 1))
++    fi
+     # #686, ADR 0113: the same refusal's next step names a tool's own switch for one thread — the
+     # way past this mode leaves, since it records no join and not which thread a creation made — in
+     # the text and in the JSON, under the opening words the dogfood entry gate sorts refusals by. It
+diff --git a/spike/build-toys.sh b/spike/build-toys.sh
+index 6247a5f..c33d7a2 100755
+--- a/spike/build-toys.sh
++++ b/spike/build-toys.sh
+@@ -84,6 +84,10 @@ echo "building toy-supsig"
+ # Static too: --observe supervised is the mode for a target no shim can enter (#217).
+ gcc $cc_flags -static -pthread -o "$out/toy-supsig" "$root/spike/toys/toy_supsig.c"
+ 
++echo "building toy-gohandover"
++# --observe supervised's hand-over rule (#1000): a static C program carrying a Go build-info section.
++gcc $cc_flags -static -pthread -o "$out/toy-gohandover" "$root/spike/toys/toy_gohandover.c"
++
+ echo "building toy-supthreads"
+ gcc $cc_flags -static -pthread -o "$out/toy-supthreads" "$root/spike/toys/toy_supthreads.c"
+ # Its dynamic twin, the control: the same source under the shim, where the join is recorded.
+diff --git a/spike/toys/toy_gohandover.c b/spike/toys/toy_gohandover.c
+new file mode 100644
+index 0000000..cc8ac56
+--- /dev/null
++++ b/spike/toys/toy_gohandover.c
+@@ -0,0 +1,87 @@
++/*
++ * --observe supervised's hand-over rule (#1000, ADR 0152): a C program dressed as a Go binary built
++ * without cgo, so the gate the rule keys on can be held in a container with no Go toolchain.
++ *
++ *   toy-gohandover init    create the state directory's files
++ *   toy-gohandover turns   main writes, hands the turn to a worker through a condition variable,
++ *                          the worker writes and hands it back, main writes again
++ *   toy-gohandover race    two threads write one file twenty times each, at once
++ *
++ * Environment: TOY_STATE, the state directory.
++ */
++#include <fcntl.h>
++#include <pthread.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++__attribute__((section(".go.buildinfo"), used)) static const char buildinfo[] =
++    "\xff Go buildinf:\x08\x02"
++    "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
++    "\x10go1.27.3"
++    "path\ttoy\nbuild\tCGO_ENABLED=0\nbuild\tGOOS=linux\n";
++
++static char base[480];
++static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
++static pthread_cond_t c = PTHREAD_COND_INITIALIZER;
++static int turn;
++
++static int put(const char *name) {
++    char p[512], tmp[520];
++    snprintf(p, sizeof p, "%s/%s", base, name);
++    snprintf(tmp, sizeof tmp, "%s.tmp", p);
++    int fd = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++    if (fd < 0 || write(fd, "x\n", 2) != 2) return 1;
++    if (close(fd)) return 1;
++    return rename(tmp, p);
++}
++
++static void wait_for(int want) {
++    pthread_mutex_lock(&m);
++    while (turn != want) pthread_cond_wait(&c, &m);
++    pthread_mutex_unlock(&m);
++}
++
++static void hand_to(int next) {
++    pthread_mutex_lock(&m);
++    turn = next;
++    pthread_cond_broadcast(&c);
++    pthread_mutex_unlock(&m);
++}
++
++static void *worker(void *arg) {
++    (void)arg;
++    wait_for(1);
++    put("b");
++    hand_to(2);
++    return 0;
++}
++
++static void *racer(void *arg) {
++    for (int i = 0; i < 20; i++) put(arg);
++    return 0;
++}
++
++int main(int argc, char **argv) {
++    const char *st = getenv("TOY_STATE");
++    if (!st || argc < 2 || buildinfo[0] != '\xff') return 2;
++    snprintf(base, sizeof base, "%s", st);
++    if (!strcmp(argv[1], "init")) return put("a") | put("b") | put("c");
++    pthread_t t;
++    if (!strcmp(argv[1], "turns")) {
++        pthread_create(&t, 0, worker, 0);
++        if (put("a")) return 1;
++        hand_to(1);
++        wait_for(2);
++        pthread_join(t, 0);
++        return put("c");
++    }
++    if (!strcmp(argv[1], "race")) {
++        pthread_create(&t, 0, racer, "c");
++        racer("c");
++        pthread_join(t, 0);
++        return 0;
++    }
++    return 2;
++}
+diff --git a/src/boundary.zig b/src/boundary.zig
+index 8f2e758..a813b14 100644
+--- a/src/boundary.zig
++++ b/src/boundary.zig
+@@ -72,6 +72,8 @@ pub const BoundaryEvidence = struct {
+     thread_turns: u32 = 0,
+     thread_joins: u32 = 0,
+     thread_detaches: u32 = 0,
++    thread_handovers: u32 = 0,
++    handover_not: contract.HandoverNot = .{},
+     unrecorded_writer_thread: bool = false,
+     shim_thread_only: bool = false,
+     /// held judges it. Neither "a process boundary" nor an image change may be said of it.
+@@ -153,10 +155,14 @@ pub fn boundaryAccount() []const u8 {
+     // to prevent. Appended through this one variable rather than at a return site: the
+     // three returns below all interpolate `{threads}`, and a clause added at one of them
+     // would vanish on the other two. That has happened here before, to the world clause.
+-    var thread_buf: [360]u8 = undefined;
++    var thread_buf: [640]u8 = undefined;
+     // The counts of hand-overs, joins and detaches are left out rather than printed as
+     // zeros a reader would take for measured absences.
+-    const threads: []const u8 = if (boundary_ev.threads > 0 and observe_mode == .supervised)
++    const handovers = boundary_ev.thread_handovers + boundary_ev.handover_not.total();
++    const threads: []const u8 = if (boundary_ev.threads > 0 and observe_mode == .supervised and handovers > 0)
++        std.fmt.bufPrint(&thread_buf, "; the supervising engine recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory; of {d} hand-over(s) between them in a Go process built without cgo and run with GOMAXPROCS=1, {d} taken as ordered because the earlier writer was stopped outside the calls the engine watches, and {d} not ({d} with another call waiting, {d} with the earlier writer in a watched call, {d} still running, {d} unreadable), which refuse", .{ boundary_ev.threads, boundary_ev.writer_threads, handovers, boundary_ev.thread_handovers, boundary_ev.handover_not.total(), boundary_ev.handover_not.queued, boundary_ev.handover_not.busy, boundary_ev.handover_not.running, boundary_ev.handover_not.unreadable }) catch
++            "; the supervising engine recorded threads created"
++    else if (boundary_ev.threads > 0 and observe_mode == .supervised)
+         std.fmt.bufPrint(&thread_buf, "; the supervising engine recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so two threads of one process writing what a crash can change refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
+             "; the supervising engine recorded threads created"
+     else if (boundary_ev.threads > 0)
+diff --git a/src/contract.zig b/src/contract.zig
+index 11e0684..285a9f2 100644
+--- a/src/contract.zig
++++ b/src/contract.zig
+@@ -23,7 +23,7 @@ const builtin = @import("builtin");
+ /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
+ /// because `contract.zig` is shared at *build* time — a stale shim binary paired
+ /// with a fresh engine is a real combination that must not be misread.
+-pub const contract_version: u32 = 20;
++pub const contract_version: u32 = 21;
+ 
+ pub const magic = "SIDEEYE1";
+ 
+@@ -396,6 +396,22 @@ pub fn fallocateCounts(mode: u32) bool {
+     return mode == 0;
+ }
+ 
++/// Why the supervising engine did not take a hand-over between two thread ids as ordered.
++pub const HandoverNot = struct {
++    queued: u32 = 0,
++    busy: u32 = 0,
++    running: u32 = 0,
++    unreadable: u32 = 0,
++
++    pub fn count(self: *HandoverNot, why: []const u8) void {
++        if (std.mem.eql(u8, why, "queued")) self.queued += 1 else if (std.mem.eql(u8, why, "busy")) self.busy += 1 else if (std.mem.eql(u8, why, "running")) self.running += 1 else self.unreadable += 1;
++    }
++
++    pub fn total(self: HandoverNot) u32 {
++        return self.queued + self.busy + self.running + self.unreadable;
++    }
++};
++
+ pub const OpClass = enum(u16) {
+     open = 1,
+     write = 2,
+@@ -426,6 +442,7 @@ pub const OpClass = enum(u16) {
+     thread_started = 205,
+     thread_join = 206,
+     thread_detach = 207,
++    thread_handover = 208,
+ 
+     shim_ready = 900,
+     kill_landed = 901,
+@@ -449,7 +466,7 @@ pub const OpClass = enum(u16) {
+ 
+     pub fn isThreadSync(self: OpClass) bool {
+         return switch (self) {
+-            .thread_started, .thread_join, .thread_detach => true,
++            .thread_started, .thread_join, .thread_detach, .thread_handover => true,
+             else => false,
+         };
+     }
+diff --git a/src/engine/trace.zig b/src/engine/trace.zig
+index 4a95217..65e95e7 100644
+--- a/src/engine/trace.zig
++++ b/src/engine/trace.zig
+@@ -205,6 +205,9 @@ pub const TraceInfo = struct {
+     thread_joins: u32 = 0,
+     thread_joins_unresolved: u32 = 0,
+     thread_detaches: u32 = 0,
++    thread_handovers: u32 = 0,
++    thread_handovers_unresolved: u32 = 0,
++    handover_not: contract.HandoverNot = .{},
+     thread_unpaired_starts: u32 = 0,
+     truncated: bool = false,
+     primary_pid: ?u32 = null,
+@@ -409,6 +412,8 @@ pub fn unboundedBudget(child: Allocator) TraceBudget {
+ /// naming the earlier one by its (creator, ordinal) pair merges the earlier one's final
+ /// vector and nothing the new one wrote (review, R2 M5). The entry's count continues from
+ /// the old one's, because the shim's slot — found by id — does too.
++const KillPointVerdictTag = enum { first, same, turned, unordered };
++
+ const ThreadOrder = struct {
+     const Snap = struct { count: u32, clock: []u32 };
+     const Thread = struct {
+@@ -429,7 +434,7 @@ const ThreadOrder = struct {
+         writer: ?u32 = null,
+         detached_pairs: std.ArrayList(contract.thread_aux.Joined) = .empty,
+     };
+-    const KillPointVerdict = union(enum) {
++    const KillPointVerdict = union(KillPointVerdictTag) {
+         first,
+         same,
+         turned,
+@@ -540,11 +545,26 @@ const ThreadOrder = struct {
+         const p = try self.proc(arena, pid);
+         const target = byStart(p, j) orelse return false;
+         const t = try thread(arena, p, tid);
+-        for (target.clock.items, 0..) |v, i| {
++        try absorb(arena, t, target.clock.items);
++        return true;
++    }
++
++    // The whole clock, not the earlier writer's own component: a write between the two that
++    // the reader passes over (a scratch path) would leave the components it carried behind.
++    fn handedOver(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, earlier: u64) !bool {
++        const p = try self.proc(arena, pid);
++        const t = try thread(arena, p, tid);
++        const w = live(p, earlier) orelse return false;
++        if (w == t) return false;
++        try absorb(arena, t, w.clock.items);
++        return true;
++    }
++
++    fn absorb(arena: Allocator, t: *Thread, clock: []const u32) !void {
++        for (clock, 0..) |v, i| {
+             if (v > component(t.clock.items, @intCast(i))) try setComponent(arena, &t.clock, @intCast(i), v);
+         }
+         try snapshot(arena, t);
+-        return true;
+     }
+ 
+     fn detached(self: *ThreadOrder, arena: Allocator, pid: u32, j: contract.thread_aux.Joined) !void {
+@@ -769,6 +789,12 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize, gate
+                     if (try order.joined(arena, op.pid, op.tid, j)) info.thread_joins += 1 else info.thread_joins_unresolved += 1;
+                 } else info.thread_joins_unresolved += 1;
+             },
++            .thread_handover => if (std.mem.startsWith(u8, op.aux, "not:")) {
++                info.handover_not.count(op.aux["not:".len..]);
++            } else {
++                const earlier = std.fmt.parseInt(u64, op.aux, 10) catch 0;
++                if (earlier != 0 and try order.handedOver(arena, op.pid, op.tid, earlier)) info.thread_handovers += 1 else info.thread_handovers_unresolved += 1;
++            },
+             .thread_detach => {
+                 info.thread_detaches += 1;
+                 if (contract.thread_aux.parseJoined(op.aux)) |j| try order.detached(arena, op.pid, j);
+@@ -2086,6 +2112,66 @@ fn readShape(tag: []const u8, records: []const R, budget: *TraceBudget) !TraceIn
+     return try readTrace(budget, std.mem.span(fz));
+ }
+ 
++test "a hand-over the supervising engine confirmed orders the later thread's writes after the earlier's: judged (v21)" {
++    var tb = unboundedBudget(std.testing.allocator);
++    var info = try readShape("v21-handover", &.{
++        rd(7, .shim_ready, 0, "/tmp/s", ""),
++        rd(7, .open, 1, "/tmp/s/a", ""),
++        rd(7, .write, 2, "/tmp/s/a", ""),
++        rd(9, .thread_handover, 0, "", "7"),
++        rd(9, .write, 3, "/tmp/s/a", ""),
++        rd(7, .thread_handover, 0, "", "9"),
++        rd(7, .write, 4, "/tmp/s/a", ""),
++    }, &tb);
++    defer info.deinit();
++    try std.testing.expectEqual(@as(?Op, null), info.first_writer_thread);
++    try std.testing.expectEqual(@as(u32, 2), info.thread_handovers);
++    try std.testing.expectEqual(@as(u32, 2), info.thread_turns);
++}
++
++test "without the engine's mark the same two thread ids writing in turn stay unordered (v21)" {
++    var tb = unboundedBudget(std.testing.allocator);
++    var info = try readShape("v21-no-handover", &.{
++        rd(7, .shim_ready, 0, "/tmp/s", ""),
++        rd(7, .open, 1, "/tmp/s/a", ""),
++        rd(7, .write, 2, "/tmp/s/a", ""),
++        rd(9, .write, 3, "/tmp/s/a", ""),
++    }, &tb);
++    defer info.deinit();
++    try std.testing.expect(info.first_writer_thread != null);
++    try std.testing.expectEqual(@as(u32, 0), info.thread_handovers);
++}
++
++test "a mark naming a thread the reader never saw orders nothing and is counted unresolved (v21)" {
++    var tb = unboundedBudget(std.testing.allocator);
++    var info = try readShape("v21-handover-unknown", &.{
++        rd(7, .shim_ready, 0, "/tmp/s", ""),
++        rd(7, .write, 1, "/tmp/s/a", ""),
++        rd(9, .thread_handover, 0, "", "11"),
++        rd(9, .write, 2, "/tmp/s/a", ""),
++    }, &tb);
++    defer info.deinit();
++    try std.testing.expect(info.first_writer_thread != null);
++    try std.testing.expectEqual(@as(u32, 1), info.thread_handovers_unresolved);
++}
++
++test "a hand-over through a thread whose writes the reader passed over still orders the next writer after the first" {
++    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
++    defer arena_state.deinit();
++    const a = arena_state.allocator();
++    var order: ThreadOrder = .{};
++    const op: Op = .{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" };
++    try order.tick(a, 7, 7);
++    try std.testing.expectEqual(KillPointVerdictTag.first, std.meta.activeTag(try order.killPoint(a, 7, 7, op)));
++    try order.tick(a, 7, 8);
++    try std.testing.expect(try order.handedOver(a, 7, 8, 7));
++    try order.tick(a, 7, 8);
++    try order.tick(a, 7, 9);
++    try std.testing.expect(try order.handedOver(a, 7, 9, 8));
++    try order.tick(a, 7, 9);
++    try std.testing.expectEqual(KillPointVerdictTag.turned, std.meta.activeTag(try order.killPoint(a, 7, 9, op)));
++}
++
+ test "a worker that writes and is joined before the main thread writes is one order: judged, one hand-over (v18)" {
+     var tb = unboundedBudget(std.testing.allocator);
+     var info = try readShape("v18-writes", &.{
+diff --git a/src/handover.zig b/src/handover.zig
+new file mode 100644
+index 0000000..ae8526b
+--- /dev/null
++++ b/src/handover.zig
+@@ -0,0 +1,132 @@
++const std = @import("std");
++
++pub const Place = enum {
++    /// Stopped in a call the engine is not notified of: its earlier calls have returned.
++    stopped,
++    /// In a call the engine is notified of: it is writing, or about to, beside the later thread.
++    busy,
++    /// On a CPU, or stopped outside any call: read again.
++    running,
++    unreadable,
++};
++
++/// One line of `/proc/<pid>/task/<tid>/syscall`.
++pub fn placeOf(line: []const u8, watched: []const u64) Place {
++    var it = std.mem.tokenizeAny(u8, line, " \n");
++    const first = it.next() orelse return .unreadable;
++    if (std.mem.eql(u8, first, "running")) return .running;
++    // `-1`: stopped outside a call (a page fault, a signal stop under a tracer). Not "returned":
++    // nothing says the earlier write is not the call it will go back into.
++    if (std.mem.eql(u8, first, "-1")) return .running;
++    const nr = std.fmt.parseInt(u64, first, 10) catch return .unreadable;
++    for (watched) |w| if (w == nr) return .busy;
++    return .stopped;
++}
++
++/// The build settings a Go linker writes into `.go.buildinfo` say the binary was built without
++/// cgo. Only the inline form (Go 1.18 and later) holds them in the section itself.
++pub fn buildinfoSaysNoCgo(section: []const u8) bool {
++    if (!std.mem.startsWith(u8, section, "\xff Go buildinf:")) return false;
++    return std.mem.indexOf(u8, section, "build\tCGO_ENABLED=0\n") != null;
++}
++
++/// `/proc/<pid>/environ`: NUL-separated, the environment the process was started with.
++pub fn environHasOneProc(environ: []const u8) bool {
++    var it = std.mem.splitScalar(u8, environ, 0);
++    var found = false;
++    while (it.next()) |kv| {
++        if (std.mem.startsWith(u8, kv, "GOMAXPROCS=")) found = std.mem.eql(u8, kv, "GOMAXPROCS=1");
++    }
++    return found;
++}
++
++pub const Section = struct { offset: u64, size: u64 };
++
++/// The `.go.buildinfo` section of a 64-bit little-endian ELF, from its header, its section
++/// header table and its section-name table, each read by `read(offset, buffer)`.
++pub fn findBuildinfo(ctx: anytype, read: fn (@TypeOf(ctx), u64, []u8) bool) ?Section {
++    var eh: [64]u8 = undefined;
++    if (!read(ctx, 0, &eh)) return null;
++    if (!std.mem.eql(u8, eh[0..4], "\x7fELF") or eh[4] != 2 or eh[5] != 1) return null;
++    const shoff = std.mem.readInt(u64, eh[0x28..0x30], .little);
++    const shentsize = std.mem.readInt(u16, eh[0x3a..0x3c], .little);
++    const shnum = std.mem.readInt(u16, eh[0x3c..0x3e], .little);
++    const shstrndx = std.mem.readInt(u16, eh[0x3e..0x40], .little);
++    if (shentsize != 64 or shnum == 0 or shstrndx >= shnum) return null;
++    const names = sectionAt(ctx, read, shoff, shstrndx) orelse return null;
++    var name: [16]u8 = undefined;
++    var i: u16 = 0;
++    while (i < shnum) : (i += 1) {
++        var sh: [64]u8 = undefined;
++        if (!read(ctx, shoff + @as(u64, i) * 64, &sh)) return null;
++        const name_off = std.mem.readInt(u32, sh[0..4], .little);
++        if (!read(ctx, names.offset + name_off, &name)) continue;
++        if (!std.mem.startsWith(u8, &name, ".go.buildinfo\x00")) continue;
++        return .{ .offset = std.mem.readInt(u64, sh[0x18..0x20], .little), .size = std.mem.readInt(u64, sh[0x20..0x28], .little) };
++    }
++    return null;
++}
++
++fn sectionAt(ctx: anytype, read: fn (@TypeOf(ctx), u64, []u8) bool, shoff: u64, index: u16) ?Section {
++    var sh: [64]u8 = undefined;
++    if (!read(ctx, shoff + @as(u64, index) * 64, &sh)) return null;
++    return .{ .offset = std.mem.readInt(u64, sh[0x18..0x20], .little), .size = std.mem.readInt(u64, sh[0x20..0x28], .little) };
++}
++
++test "the earlier writer stopped in a call the engine does not watch has returned; in a watched one it is writing" {
++    const watched = [_]u64{ 64, 66, 68, 56 };
++    try std.testing.expectEqual(Place.stopped, placeOf("98 0x4000 0x80 0x1 0x0 0x0 0x0 0xffff 0xaaaa\n", &watched));
++    try std.testing.expectEqual(Place.stopped, placeOf("22 0x3 0x1 0x2 0x0 0x0 0x0 0xffff 0xaaaa\n", &watched));
++    try std.testing.expectEqual(Place.busy, placeOf("68 0x5 0x1 0x2 0x0 0x0 0x0 0xffff 0xaaaa\n", &watched));
++    try std.testing.expectEqual(Place.running, placeOf("running\n", &watched));
++    try std.testing.expectEqual(Place.running, placeOf("-1 0xffff 0xaaaa\n", &watched));
++    try std.testing.expectEqual(Place.unreadable, placeOf("", &watched));
++    try std.testing.expectEqual(Place.unreadable, placeOf("x9 0x0\n", &watched));
++}
++
++test "a Go binary is in scope only when its inline build settings say cgo was off" {
++    const head = "\xff Go buildinf:\x08\x02" ++ "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
++    try std.testing.expect(buildinfoSaysNoCgo(head ++ "\x10go1.27.3\x80path\tx\nbuild\tCGO_ENABLED=0\nbuild\tGOOS=linux\n"));
++    try std.testing.expect(!buildinfoSaysNoCgo(head ++ "\x10go1.27.3\x80path\tx\nbuild\tCGO_ENABLED=1\n"));
++    try std.testing.expect(!buildinfoSaysNoCgo(head ++ "\x10go1.27.3\x80path\tx\n"));
++    try std.testing.expect(!buildinfoSaysNoCgo("build\tCGO_ENABLED=0\n"));
++}
++
++test "GOMAXPROCS counts as one only when the process's own environment sets it to exactly 1" {
++    try std.testing.expect(environHasOneProc("PATH=/bin\x00GOMAXPROCS=1\x00HOME=/"));
++    try std.testing.expect(!environHasOneProc("PATH=/bin\x00GOMAXPROCS=2\x00"));
++    try std.testing.expect(!environHasOneProc("PATH=/bin\x00GOMAXPROCS=10\x00"));
++    try std.testing.expect(!environHasOneProc("PATH=/bin\x00XGOMAXPROCS=1\x00"));
++    try std.testing.expect(!environHasOneProc("GOMAXPROCS=1\x00GOMAXPROCS=4\x00"));
++    try std.testing.expect(!environHasOneProc(""));
++}
++
++test "the buildinfo section is found by name in a 64-bit little-endian ELF" {
++    var img: [1024]u8 = @splat(0);
++    @memcpy(img[0..4], "\x7fELF");
++    img[4] = 2;
++    img[5] = 1;
++    std.mem.writeInt(u64, img[0x28..0x30], 512, .little);
++    std.mem.writeInt(u16, img[0x3a..0x3c], 64, .little);
++    std.mem.writeInt(u16, img[0x3c..0x3e], 3, .little);
++    std.mem.writeInt(u16, img[0x3e..0x40], 1, .little);
++    const names = "\x00.shstrtab\x00.go.buildinfo\x00";
++    @memcpy(img[256..][0..names.len], names);
++    std.mem.writeInt(u64, img[512 + 64 + 0x18 ..][0..8], 256, .little);
++    std.mem.writeInt(u64, img[512 + 64 + 0x20 ..][0..8], names.len, .little);
++    std.mem.writeInt(u32, img[512 + 128 ..][0..4], 11, .little);
++    std.mem.writeInt(u64, img[512 + 128 + 0x18 ..][0..8], 300, .little);
++    std.mem.writeInt(u64, img[512 + 128 + 0x20 ..][0..8], 40, .little);
++    const Img = struct {
++        fn read(b: []const u8, off: u64, out: []u8) bool {
++            if (off + out.len > b.len) return false;
++            @memcpy(out, b[off..][0..out.len]);
++            return true;
++        }
++    };
++    const s = findBuildinfo(@as([]const u8, &img), Img.read) orelse return error.TestUnexpectedResult;
++    try std.testing.expectEqual(@as(u64, 300), s.offset);
++    try std.testing.expectEqual(@as(u64, 40), s.size);
++    img[256 + 11 + 4] = 'X';
++    try std.testing.expect(findBuildinfo(@as([]const u8, &img), Img.read) == null);
++}
+diff --git a/src/main.zig b/src/main.zig
+index 57bef1c..3a6d704 100644
+--- a/src/main.zig
++++ b/src/main.zig
+@@ -1534,6 +1534,8 @@ fn phaseStructural(run: *Run) void {
+     boundary.boundary_ev.thread_turns = trace.thread_turns;
+     boundary.boundary_ev.thread_joins = trace.thread_joins;
+     boundary.boundary_ev.thread_detaches = trace.thread_detaches;
++    boundary.boundary_ev.thread_handovers = trace.thread_handovers;
++    boundary.boundary_ev.handover_not = trace.handover_not;
+     boundary.boundary_ev.shim_thread_only = trace.boundary == .thread and !trace.crossedProcessBoundary() and trace.exec_continuations == 0;
+     boundary.boundary_ev.shim_subject_detached = trace.subject_detached and !trace.crossedProcessBoundary();
+ 
+diff --git a/src/supervise_linux.zig b/src/supervise_linux.zig
+index b431b88..ab8be4f 100644
+--- a/src/supervise_linux.zig
++++ b/src/supervise_linux.zig
+@@ -11,6 +11,7 @@ const supervise = @import("supervise.zig");
+ const image = @import("image.zig");
+ const posix = @import("posix.zig");
+ const engine_build_options = @import("engine_build_options");
++const handoff = @import("handover.zig");
+ 
+ const linux = std.os.linux;
+ const SYS = linux.SYS;
+@@ -73,6 +74,12 @@ const common_watched = [_]Watched{
+     .{ .sys = .setsid },          .{ .sys = .setpgid },               .{ .sys = .fallocate },
+ };
+ 
++const watched_nrs: [watched.len]u64 = blk: {
++    var a: [watched.len]u64 = undefined;
++    for (watched, 0..) |w, i| a[i] = @backingInt(w.sys);
++    break :blk a;
++};
++
+ const off_nr: u32 = @offsetOf(SECCOMP.data, "nr");
+ const off_arch: u32 = @offsetOf(SECCOMP.data, "arch");
+ fn offArg(i: u3) u32 {
+@@ -523,6 +530,9 @@ const Tracer = struct {
+     /// crash point the world claims to have stopped at.
+     killed: bool = false,
+     probe: if (engine_build_options.handoff_probe) Probe else void = if (engine_build_options.handoff_probe) .{} else {},
++    listener: i32 = -1,
++    turns: [16]Turn = undefined,
++    n_turns: usize = 0,
+     rec_buf: [contract.max_record_len]u8 = undefined,
+     path_a: [contract.max_path]u8 = undefined,
+     path_b: [contract.max_path]u8 = undefined,
+@@ -628,6 +638,7 @@ const Tracer = struct {
+ 
+     fn handle(self: *Tracer, listener: i32, req: *const SECCOMP.notif) Answer {
+         if (self.killed) return .withheld;
++        self.listener = listener;
+         const tid: i32 = @bitCast(req.pid);
+         const pid = tgidOf(tid) orelse {
+             // A task that is gone makes no call; one that is still there and cannot be read is
+@@ -673,6 +684,7 @@ const Tracer = struct {
+             self.seq += 1;
+             s = self.seq;
+             if (engine_build_options.handoff_probe) self.probe.handOver(s, pid, tid);
++            self.turn(pid, tid);
+             if (self.cfg.kill_at != 0 and s == self.cfg.kill_at) {
+                 self.record(.kill_landed, s, pid, tid, path, aux);
+                 self.kill(s, pid, tid, path);
+@@ -682,9 +694,45 @@ const Tracer = struct {
+             if (!contract.isInsideDir(path, self.cfg.state_dir)) return .@"continue";
+         }
+         self.record(op, s, pid, tid, path, aux);
++        if (s != 0) self.answering(pid);
+         return .@"continue";
+     }
+ 
++    fn turnOf(self: *Tracer, pid: i32) ?*Turn {
++        for (self.turns[0..self.n_turns]) |*t| if (t.pid == pid) return t;
++        if (self.n_turns == self.turns.len) return null;
++        self.turns[self.n_turns] = .{ .pid = pid };
++        self.n_turns += 1;
++        return &self.turns[self.n_turns - 1];
++    }
++
++    /// Where the earlier writer is when another thread of its process writes the state. Only for
++    /// a Go process built without cgo and started with GOMAXPROCS=1; any other process is left
++    /// to the creation and join records, as before.
++    fn turn(self: *Tracer, pid: i32, tid: i32) void {
++        const t = self.turnOf(pid) orelse return;
++        const earlier = t.writer;
++        t.writer = tid;
++        if (earlier == 0 or earlier == tid) return;
++        if (t.scope == .unknown) t.scope = if (goOneProc(pid)) .in else .out;
++        if (t.scope != .in) return;
++        var b: [24]u8 = undefined;
++        const aux = if (t.queued) "not:queued" else switch (placeOfWriter(pid, earlier)) {
++            .stopped => std.fmt.bufPrint(&b, "{d}", .{earlier}) catch return,
++            .busy => "not:busy",
++            .running => "not:running",
++            .unreadable => "not:unreadable",
++        };
++        self.record(.thread_handover, 0, pid, tid, "", aux);
++    }
++
++    // Read at the answer, not at the next hand-over: once answered, a call that was waiting
++    // behind this one is indistinguishable from one made after this one returned.
++    fn answering(self: *Tracer, pid: i32) void {
++        const t = self.turnOf(pid) orelse return;
++        t.queued = self.listener >= 0 and pollOne(self.listener, 0) & linux.POLL.IN != 0;
++    }
++
+     /// The crash point. The call that reached it is still suspended — this function does not
+     /// answer it — so it never runs. The cgroup's `cgroup.kill` first where the world has one
+     /// (it reaches a process however it left the group); without one, the caller and the
+@@ -1078,6 +1126,74 @@ test "a hand-over line names where the earlier writer was, and says unreadable f
+     );
+ }
+ 
++const Turn = struct {
++    pid: i32,
++    writer: i32 = 0,
++    queued: bool = false,
++    scope: enum { unknown, in, out } = .unknown,
++};
++
++const reread_limit = 1000;
++const reread_ms = 20;
++
++fn placeOfWriter(pid: i32, writer: i32) handoff.Place {
++    var pb: [64]u8 = undefined;
++    const p = std.mem.printSentinel(&pb, "/proc/{d}/task/{d}/syscall", .{ pid, writer }, 0) catch return .unreadable;
++    const start = monotonicMs();
++    var reads: u32 = 0;
++    while (true) {
++        var buf: [256]u8 = undefined;
++        const text = readSmall(p, &buf) orelse return if (taskGone(pid, writer)) .stopped else .unreadable;
++        const place = handoff.placeOf(text, &watched_nrs);
++        if (place != .running) return place;
++        reads += 1;
++        if (reads >= reread_limit or monotonicMs() - start >= reread_ms) return .running;
++        _ = linux.syscall0(.sched_yield);
++    }
++}
++
++fn taskGone(pid: i32, tid: i32) bool {
++    var pb: [64]u8 = undefined;
++    const p = std.mem.printSentinel(&pb, "/proc/{d}/task/{d}", .{ pid, tid }, 0) catch return false;
++    return linux.errno(linux.faccessat(AT_FDCWD, p, linux.F_OK, 0)) == .NOENT;
++}
++
++var environ_buf: [128 * 1024]u8 = undefined;
++var buildinfo_buf: [64 * 1024]u8 = undefined;
++
++fn goOneProc(pid: i32) bool {
++    var pb: [64]u8 = undefined;
++    const ep = std.mem.printSentinel(&pb, "/proc/{d}/environ", .{pid}, 0) catch return false;
++    const env = readSmall(ep, &environ_buf) orelse return false;
++    if (env.len == environ_buf.len or !handoff.environHasOneProc(env)) return false;
++    var xb: [64]u8 = undefined;
++    const xp = std.mem.printSentinel(&xb, "/proc/{d}/exe", .{pid}, 0) catch return false;
++    const rc = linux.open(xp, .{ .ACCMODE = .RDONLY, .CLOEXEC = true }, 0);
++    if (linux.errno(rc) != .SUCCESS) return false;
++    const fd: i32 = @intCast(rc);
++    defer _ = linux.close(fd);
++    const s = handoff.findBuildinfo(fd, preadAll) orelse return false;
++    const n: usize = @intCast(@min(s.size, buildinfo_buf.len));
++    if (!preadAll(fd, s.offset, buildinfo_buf[0..n])) return false;
++    return handoff.buildinfoSaysNoCgo(buildinfo_buf[0..n]);
++}
++
++fn preadAll(fd: i32, off: u64, out: []u8) bool {
++    var n: usize = 0;
++    while (n < out.len) {
++        const r = linux.pread(fd, out[n..].ptr, out.len - n, @intCast(off + n));
++        switch (linux.errno(r)) {
++            .SUCCESS => {
++                if (r == 0) return false;
++                n += r;
++            },
++            .INTR => continue,
++            else => return false,
++        }
++    }
++    return true;
++}
++
+ fn readSmall(path: [*:0]const u8, out: []u8) ?[]const u8 {
+     const rc = linux.open(path, .{ .ACCMODE = .RDONLY, .CLOEXEC = true }, 0);
+     if (linux.errno(rc) != .SUCCESS) return null;

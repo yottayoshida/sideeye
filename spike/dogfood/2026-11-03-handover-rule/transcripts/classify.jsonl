@@ -1,0 +1,13 @@
+{"handovers": 203, "mode": "no-oracle", "not": [198, 2, 0, 0], "runs": 10, "subject": "ctl-race-loop", "succeeded": 0, "taken": 3, "verdicts": {"UNKNOWN multiple_threads_detected": 10}, "with_handovers": 10}
+{"handovers": 26, "mode": "no-oracle", "not": [12, 4, 0, 0], "runs": 10, "subject": "ctl-race-once", "succeeded": 0, "taken": 10, "verdicts": {"UNKNOWN multiple_threads_detected": 10}, "with_handovers": 10}
+{"handovers": 5, "mode": "no-oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "ctl-turns", "succeeded": 4, "taken": 5, "verdicts": {"UNKNOWN nothing_could_fail": 10}, "with_handovers": 4}
+{"handovers": 9, "mode": "no-oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "etcdutl", "succeeded": 6, "taken": 9, "verdicts": {"FAIL 51": 10}, "with_handovers": 6}
+{"handovers": 244, "mode": "no-oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "gogs", "succeeded": 1, "taken": 244, "verdicts": {"UNKNOWN multiple_threads_detected": 9, "UNKNOWN state_changed_unaccounted": 1}, "with_handovers": 10}
+{"handovers": 10, "mode": "no-oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "gqlgen", "succeeded": 10, "taken": 10, "verdicts": {"UNKNOWN boundary_without_oracle": 10}, "with_handovers": 10}
+{"handovers": 0, "mode": "no-oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "grafana", "succeeded": 0, "taken": 0, "verdicts": {"PASS 18/18": 10}, "with_handovers": 0}
+{"handovers": 130, "mode": "oracle", "not": [5, 107, 0, 0], "runs": 10, "subject": "ctl-race-loop", "succeeded": 1, "taken": 18, "verdicts": {"UNKNOWN multiple_threads_detected": 8, "UNKNOWN oracle_missed_operation": 2}, "with_handovers": 9}
+{"handovers": 17, "mode": "oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "ctl-race-once", "succeeded": 8, "taken": 17, "verdicts": {"UNKNOWN kill_did_not_land": 1, "UNKNOWN nothing_could_fail": 5, "UNKNOWN oracle_missed_operation": 4}, "with_handovers": 8}
+{"handovers": 29, "mode": "oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "ctl-turns", "succeeded": 10, "taken": 29, "verdicts": {"UNKNOWN nothing_could_fail": 10}, "with_handovers": 10}
+{"handovers": 9, "mode": "oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "etcdutl", "succeeded": 7, "taken": 9, "verdicts": {"FAIL 51": 10}, "with_handovers": 7}
+{"handovers": 74, "mode": "oracle", "not": [0, 0, 0, 0], "runs": 2, "subject": "gogs", "succeeded": 1, "taken": 74, "verdicts": {"UNKNOWN baseline_violates_invariant": 1, "none": 1}, "with_handovers": 1}
+{"handovers": 8, "mode": "oracle", "not": [0, 0, 0, 0], "runs": 10, "subject": "grafana", "succeeded": 6, "taken": 8, "verdicts": {"PASS 18/18": 10}, "with_handovers": 6}

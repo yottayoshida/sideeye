@@ -1,0 +1,6 @@
+sha256 printed (date -u beside it): 2026-11-03T11:24:14Z
+image: sha256:dd276b3ff5c0aba7df41722fa1233983129bd45cdbe4196934db1d8488d23541 created 2026-11-01T12:08:22.131200055Z
+cpus: 10
+go: go version go1.27.3 linux/arm64
+arch: aarch64
+engine sha256 (aarch64-linux Debug, main 0fff6366 + rule): ec7a77dccea288554aeea8c521eb0d4f6de7e12e5ec4d5f5ac4688553042a22a
