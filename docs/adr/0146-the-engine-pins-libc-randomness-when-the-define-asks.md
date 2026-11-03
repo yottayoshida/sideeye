@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (2026-11-01)
 - **Amends:** ADR 0041 (its first alternative, "the engine applies the apparatus", for `pin:random` only)
+- **Amended by:** ADR 0151 (`pin:clock`, the clock this decision took out, in the same library)
 - **Refs:** #951; `spike/dogfood/2026-10-12-shipped-v1120/` (KeePassXC judged with a hand-written `pin-random.c`).
 
 ## Context

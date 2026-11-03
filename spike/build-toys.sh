@@ -30,6 +30,11 @@ echo "building toy-lfs"
 # fopen64 — the glibc alias path the stdio wrappers must also cover (ADR 0005).
 gcc $cc_flags -D_FILE_OFFSET_BITS=64 -o "$out/toy-lfs" "$root/spike/toys/toy.c" -lpthread
 
+echo "building toy-clock"
+# pin:clock's fixture: the wall clock through five libc entry points, and every wait
+# pin:clock translates, each woken early and each left to its deadline.
+gcc $cc_flags -o "$out/toy-clock" "$root/spike/toys/toy_clock.c" -lpthread -lrt
+
 echo "building toy-rawchild"
 # #405's fixture: a child created with a raw syscall, writing through raw syscalls, into
 # the judged directory. The parent's libc write keeps the zero-ops detector quiet, which

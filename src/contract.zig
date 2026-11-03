@@ -53,8 +53,9 @@ pub const env = struct {
     pub const kill_aside = "SIDEEYE_KILL_ASIDE";
     pub const pin_seed = "SIDEEYE_PIN_SEED";
     pub const pin_claims = "SIDEEYE_PIN_CLAIMS";
+    pub const pin_clock = "SIDEEYE_PIN_CLOCK";
     pub const stop_at_kill = "SIDEEYE_STOP_AT_KILL";
-    pub const removed_at_start = [_][:0]const u8{ kill_at, kill_group, pin_seed, pin_claims, stop_at_kill };
+    pub const removed_at_start = [_][:0]const u8{ kill_at, kill_group, pin_seed, pin_claims, pin_clock, stop_at_kill };
 };
 
 pub const interleave_wait_default_s: u32 = 5;

@@ -65,7 +65,7 @@ else
 
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, contract.env.pin_seed, contract.env.pin_claims, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, contract.env.pin_seed, contract.env.pin_claims, contract.env.pin_clock, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -273,6 +273,7 @@ fn runOperationObserved(
                 .{ contract.env.kill_aside, "" },
                 .{ contract.env.pin_seed, pinning.seed_hex },
                 .{ contract.env.pin_claims, pinning.claimsFor(arena) },
+                .{ contract.env.pin_clock, pinning.clock_value },
                 .{ preload_var, preload },
             };
             break :run posix.runChildCaptureContained(gpa, witness.straceArgv(arena, strace_path, witness.straceCalls(power_loss), oracle_out, &pairs, argv), &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
@@ -292,6 +293,7 @@ fn runOperationObserved(
             .{ contract.env.kill_aside, "" },
             .{ contract.env.pin_seed, pinning.seed_hex },
             .{ contract.env.pin_claims, pinning.claimsFor(arena) },
+            .{ contract.env.pin_clock, pinning.clock_value },
             .{ preload_var, preload },
         }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
     };
@@ -1198,10 +1200,7 @@ fn phaseApparatus(run: *Run) void {
     }
 
     if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup, args.observe, run.define.work_abs)) |r| setupError(r.reason, r.text);
-    if (pinning.asked(args.apparatus)) {
-        const case_seed = if (run.define.replay_case) |c| c.pin_seed else null;
-        if (pinning.prepare(arena_state.allocator(), "pin:random", run.define.work_abs, run.define.shim, case_seed)) |r| setupError(r.reason, r.text);
-    }
+    if (pinning.prepare(arena_state.allocator(), args.apparatus, run.define.work_abs, run.define.shim, if (run.define.replay_case) |c| c.pin_seed else null, if (run.define.replay_case) |c| c.pin_clock else null)) |r| setupError(r.reason, r.text);
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
@@ -2525,6 +2524,7 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
             .{ contract.env.pin_seed, pinning.seed_hex },
             .{ contract.env.pin_claims, pinning.claimsFor(arena) },
+            .{ contract.env.pin_clock, pinning.clock_value },
             .{ preload_var, supervise.preloadFor(args.observe, shim) },
         };
         var spawn_arena = std.heap.ArenaAllocator.init(gpa);
@@ -3273,6 +3273,7 @@ fn phaseReport(run: *Run) void {
                 .preload_var = preload_var,
                 .shim = pinning.preload orelse shim,
                 .pin_seed = pinning.seed_hex,
+                .pin_clock = pinning.clock_value,
                 .kill_at = f.k,
                 .observe = args.observe.name(),
                 .argv = run.rec.op_argv,
@@ -4100,7 +4101,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
         // Only env: before the setup: the setup may make what the other kinds look for (a
         // pythonpath: file, a preload line), and a define relying on that would be refused for
         // a device it was about to make.
-        if ((parsed == .env or parsed == .pin_random) != (phase == .before_setup)) continue;
+        if ((parsed == .env or parsed == .pin_random or parsed == .pin_clock) != (phase == .before_setup)) continue;
         switch (parsed) {
             .env => |v| {
                 const got = envValue(v.name) orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
@@ -4128,7 +4129,18 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
                 if (!pythonpathHas(arena, pp, file, cwd))
                     return workdir.Refusal.print(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
-            .pin_random => if (pinning.refusal(arena, e, observe, work_abs)) |r| return r,
+            .pin_random, .pin_clock => {
+                if (pinning.refusal(arena, e, parsed, entries, observe, work_abs)) |r| return r;
+                if (parsed == .pin_clock) {
+                    if (preload_file == null) preload_file = capture.readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
+                        if (posix.access("/etc/ld.so.preload", posix.F_OK) == 0)
+                            return workdir.Refusal.print(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB), so whether it fakes the clock too cannot be told", .{e});
+                        break :blk "";
+                    };
+                    if (preloadNamed(preload_file.?, "libfaketime"))
+                        return workdir.Refusal.print(arena, .environment, "apparatus {s}: /etc/ld.so.preload names libfaketime, which fakes the wall clock of every process, so the clock would be faked twice and every wait translated twice; take the line out, or drop pin:clock and declare preload:libfaketime", .{e});
+                }
+            },
             .note => {},
         }
     }

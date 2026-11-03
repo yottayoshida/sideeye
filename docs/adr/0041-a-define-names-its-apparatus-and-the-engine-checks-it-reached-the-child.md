@@ -4,7 +4,8 @@ Status: Accepted (2026-09-03)
 
 Amended by **ADR 0136**: a case saved from a define with a checked entry carries the
 declaration, and `replay` checks it where `explore` does. Amended by **ADR 0146**: one kind,
-`pin:random`, is applied by the engine — the first alternative below, taken for randomness only.
+`pin:random`, is applied by the engine — the first alternative below, taken for randomness only. Amended by
+**ADR 0151**: a second, `pin:clock`, for the wall clock.
 
 Closes #257. The eighth key of the define (`[world] state` and, in `[define]`, the seventh),
 and the fifth time DESIGN.md §12's sentence — *if Define ever needs more than this, that is

@@ -71,6 +71,7 @@ fn runFrom(ctx: Context, from: engine.Snapshot) End {
         .{ contract.env.kill_aside, "" },
         .{ contract.env.pin_seed, pinning.seed_hex },
         .{ contract.env.pin_claims, pinning.claimsFor(ctx.arena) },
+        .{ contract.env.pin_clock, pinning.clock_value },
         .{ ctx.preload_var, preload() },
     }, .{ .path = ctx.out_path, .stderr_too = true, .exclusive = true }, ctx.budget_ms, ctx.cwd, cg_ptr) catch |e| switch (e) {
         error.TimedOut => unknown(.child_timed_out, "the operation, run again from a state for the rerun invariant, was still running after the --world-timeout budget expired; it was sent SIGKILL", .raise_world_timeout),
