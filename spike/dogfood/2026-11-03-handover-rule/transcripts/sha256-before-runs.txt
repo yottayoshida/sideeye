@@ -1,0 +1,7 @@
+2deb7fb74186e419c05199a2d0c671e8772d80e9cb03815d6697905b4d509fd0  spike/dogfood/2026-11-03-handover-rule/PREDICTIONS.md
+321c195ce7488cf0192eb260efcc7e7cb7826521a958fbe573b8dd2b374b4442  spike/dogfood/2026-11-03-handover-rule/apparatus/classify.py
+3249944def7fda432deb62a1dc480f59135859dc6e345f4cf6d283cf6e07e68c  spike/dogfood/2026-11-03-handover-rule/apparatus/measure.sh
+530f536a06d85192e12b96545635bb459b874ffcb29b5e94b99242e7d7794394  spike/dogfood/2026-11-03-handover-rule/apparatus/run.sh
+a8750b75f39ac782832a25216941ea6c12345bab3081e6cc361ac030fafb8102  spike/dogfood/2026-11-03-handover-rule/apparatus/controls/race-loop.go
+0f9ed40c8e1a34fe07fd9e3d31a3f210d9e0628f6bc904007cd07cb491ceaf28  spike/dogfood/2026-11-03-handover-rule/apparatus/controls/race-once.go
+8b9b5376c362301de30ce7cc7e5584a0ed8fd90052500e36b9f8a6ff106e97de  spike/dogfood/2026-11-03-handover-rule/apparatus/controls/turns.go

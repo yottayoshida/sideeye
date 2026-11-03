@@ -1,11 +1,12 @@
-# 0138 — Threads that only a lock, a queue or a wake orders stay outside; two thread ids writing in turn under supervised are to be judged; the threads refusal stops naming a switch the run already set
+# 0138 — Threads that only a lock, a queue or a wake orders stay outside; two thread ids writing in turn under supervised stay refused (amended 2026-11-03); the threads refusal stops naming a switch the run already set
 
-- **Status:** Accepted (2026-10-29)
+- **Status:** Accepted (2026-10-29; decision 2 amended 2026-11-02 and 2026-11-03, #1000)
 - **Amends:** ADR 0067 (revisited, its line kept — decision 1) and ADR 0113 (the threads refusal's step is chosen from
   the environment — decision 3).
 - **Refs:** #980, #981, #987; #580 and #687, whose rulings decision 1 stays consistent with;
   `spike/dogfood/2026-10-22-walls-v1150/`, `spike/dogfood/2026-10-25-shipped-v1160/`,
-  `spike/dogfood/2026-10-29-go-handoff/` (decision 2's measurement).
+  `spike/dogfood/2026-10-29-go-handoff/` (decision 2's measurement); #1000, `spike/dogfood/2026-11-01-handoff-engine/` and
+  `spike/dogfood/2026-11-03-handover-rule/` (its amendments' measurements).
 - **Scope:** `contract.NextStep` (the four threads members), `boundary.threadsStep`, `src/mcp.zig`'s sentences,
   `docs/apparatus.md`, `docs/report-schema.md`. Not `contract_version`, not `unknown_reason`: `next_step` is not a frozen
   surface (ADR 0090).
@@ -124,3 +125,34 @@ and the one hand-over it could not place is one a reading again could settle eit
    every hand-over, so one read says little about a race that overlaps rarely. Hence the reading again.
 3. **Decision 1.** Unchanged, and still the rule's plan's to settle: a hand-over the earlier writer had
    left says this run took turns, not that the next will.
+
+## Amended 2026-11-03 (#1000): decision 2 is not built
+
+The rule was built in the form the 2026-11-02 amendment allows and measured under rules fixed before its
+runs (`spike/dogfood/2026-11-03-handover-rule/`); it failed them in both modes, and the owner ruled not to
+ship it. The form measured, narrowed by the owner to Go built without cgo whose process runs with
+`GOMAXPROCS=1`: a hand-over is taken as ordered when no other call was waiting for the engine as the
+earlier writer's last crash-point call was answered, and the earlier writer is then found stopped in a call
+the engine is not notified of, or gone, read again while it runs (up to 1,000 reads or 20 ms). An earlier
+writer found in a notified call is not read again but refused: reading until it left that call would have
+the engine turn an overlap into turns.
+
+- **Under `--oracle` the evidence did not hold.** Of two goroutines released together to write once each,
+  the recording took every hand-over as ordered in all 8 runs that had one, where without an oracle 12 of
+  the same control's 26 recorded hand-overs had a call waiting. That is consistent with strace's stops
+  keeping the second write out of the engine's queue when the first is answered; the mechanism was not
+  observed. No run reached a PASS, but the control cannot by construction (it writes files the state did
+  not hold); a run under the oracle is the run the README's promise is about. `race-loop` failed the same
+  criterion there too: hand-overs in 9 runs of 10, one of them not refused for its threads.
+- **Without an oracle the races were refused in 20 runs of 20**, the rule's reasons on record for 11 of them
+  (the other 9 refused in an explored world, whose reason the record does not keep); the turn-taking
+  control changed thread in 4 runs of 10, short of its criterion; and read as written — nine or more runs
+  succeeding — the targets' criterion held for gqlgen alone. That mode is `--allow-unverified`'s weaker
+  claim. The owner chose not to rebuild the control and measure that mode again.
+- Four of the eight Go tools were out of the narrowed scope before anything ran: Dolt, vmrestore, JuiceFS
+  and Navidrome are built with cgo.
+
+Decision 2 now reads: **no rule judges two thread ids writing in turn under `--observe supervised`.** These
+runs stay refused `multiple_threads_detected`, and the step stays as decision 3 chose it. Decision 1 is
+unchanged. Reopen only with evidence that holds under the oracle — a sign, from outside strace's stops,
+that the later write was issued after the earlier one returned.

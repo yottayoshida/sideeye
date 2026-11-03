@@ -1,0 +1,122 @@
+no-oracle	ctl-race-loop	run01	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run02	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run03	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run04	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (2 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-loop	run05	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run06	UNKNOWN multiple_threads_detected	of 100 hand-over(s) between them, 1 taken as ordered, and 99 not (98 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-loop	run07	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run08	UNKNOWN multiple_threads_detected	of 100 hand-over(s) between them, 1 taken as ordered, and 99 not (98 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-loop	run09	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-loop	run10	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-race-once	run01	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (2 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run02	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (2 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run03	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (1 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run04	UNKNOWN multiple_threads_detected	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run05	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (1 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run06	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (1 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run07	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (2 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run08	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (2 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run09	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 1 taken as ordered, and 2 not (1 with another call waiting, 1 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-race-once	run10	UNKNOWN multiple_threads_detected	
+no-oracle	ctl-turns	run01	UNKNOWN nothing_could_fail	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-turns	run02	UNKNOWN nothing_could_fail	
+no-oracle	ctl-turns	run03	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-turns	run04	UNKNOWN nothing_could_fail	
+no-oracle	ctl-turns	run05	UNKNOWN nothing_could_fail	
+no-oracle	ctl-turns	run06	UNKNOWN nothing_could_fail	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-turns	run07	UNKNOWN nothing_could_fail	
+no-oracle	ctl-turns	run08	UNKNOWN nothing_could_fail	
+no-oracle	ctl-turns	run09	UNKNOWN nothing_could_fail	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	ctl-turns	run10	UNKNOWN nothing_could_fail	
+no-oracle	etcdutl	run01	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run02	FAIL 51 of 59 explored worlds violated an invariant	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run03	FAIL 51 of 59 explored worlds violated an invariant	
+no-oracle	etcdutl	run04	FAIL 51 of 59 explored worlds violated an invariant	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run05	FAIL 51 of 59 explored worlds violated an invariant	
+no-oracle	etcdutl	run06	FAIL 51 of 59 explored worlds violated an invariant	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run07	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run08	FAIL 51 of 59 explored worlds violated an invariant	
+no-oracle	etcdutl	run09	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	etcdutl	run10	FAIL 51 of 59 explored worlds violated an invariant	
+no-oracle	gogs	run01	UNKNOWN multiple_threads_detected	of 19 hand-over(s) between them, 19 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run02	UNKNOWN multiple_threads_detected	of 19 hand-over(s) between them, 19 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run03	UNKNOWN multiple_threads_detected	of 34 hand-over(s) between them, 34 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run04	UNKNOWN multiple_threads_detected	of 24 hand-over(s) between them, 24 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run05	UNKNOWN multiple_threads_detected	of 24 hand-over(s) between them, 24 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run06	UNKNOWN multiple_threads_detected	of 22 hand-over(s) between them, 22 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run07	UNKNOWN multiple_threads_detected	of 19 hand-over(s) between them, 19 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run08	UNKNOWN multiple_threads_detected	of 25 hand-over(s) between them, 25 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run09	UNKNOWN state_changed_unaccounted	of 33 hand-over(s) between them, 33 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gogs	run10	UNKNOWN multiple_threads_detected	of 25 hand-over(s) between them, 25 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run01	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run02	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run03	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run04	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run05	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run06	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run07	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run08	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run09	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	gqlgen	run10	UNKNOWN boundary_without_oracle	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+no-oracle	grafana	run01	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run02	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run03	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run04	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run05	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run06	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run07	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run08	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run09	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+no-oracle	grafana	run10	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+oracle	ctl-race-loop	run01	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 3 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run02	UNKNOWN oracle_missed_operation	
+oracle	ctl-race-loop	run03	UNKNOWN multiple_threads_detected	of 3 hand-over(s) between them, 3 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run04	UNKNOWN multiple_threads_detected	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run05	UNKNOWN multiple_threads_detected	
+oracle	ctl-race-loop	run06	UNKNOWN multiple_threads_detected	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run07	UNKNOWN oracle_missed_operation	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run08	UNKNOWN multiple_threads_detected	
+oracle	ctl-race-loop	run09	UNKNOWN multiple_threads_detected	of 18 hand-over(s) between them, 5 taken as ordered, and 13 not (3 with another call waiting, 10 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-loop	run10	UNKNOWN multiple_threads_detected	of 100 hand-over(s) between them, 1 taken as ordered, and 99 not (2 with another call waiting, 97 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run01	UNKNOWN nothing_could_fail	of 3 hand-over(s) between them, 3 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run02	UNKNOWN kill_did_not_land	
+oracle	ctl-race-once	run03	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run04	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run05	UNKNOWN oracle_missed_operation	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run06	UNKNOWN oracle_missed_operation	
+oracle	ctl-race-once	run07	UNKNOWN oracle_missed_operation	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run08	UNKNOWN oracle_missed_operation	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run09	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-race-once	run10	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run01	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run02	UNKNOWN nothing_could_fail	of 10 hand-over(s) between them, 10 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run03	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run04	UNKNOWN nothing_could_fail	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run05	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run06	UNKNOWN nothing_could_fail	of 3 hand-over(s) between them, 3 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run07	UNKNOWN nothing_could_fail	of 3 hand-over(s) between them, 3 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run08	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run09	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	ctl-turns	run10	UNKNOWN nothing_could_fail	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run01	FAIL 51 of 59 explored worlds violated an invariant	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run02	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run03	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run04	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run05	FAIL 51 of 59 explored worlds violated an invariant	
+oracle	etcdutl	run06	FAIL 51 of 59 explored worlds violated an invariant	
+oracle	etcdutl	run07	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run08	FAIL 51 of 59 explored worlds violated an invariant	
+oracle	etcdutl	run09	FAIL 51 of 59 explored worlds violated an invariant	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	etcdutl	run10	FAIL 51 of 59 explored worlds violated an invariant	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	gogs	run01	UNKNOWN baseline_violates_invariant	of 74 hand-over(s) between them, 74 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	gogs	run02		
+oracle	grafana	run01	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run02	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run03	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+oracle	grafana	run04	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run05	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run06	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 1 hand-over(s) between them, 1 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run07	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	of 2 hand-over(s) between them, 2 taken as ordered, and 0 not (0 with another call waiting, 0 with the earlier writer in a watched call, 0 still running, 0 unreadable), which refuse
+oracle	grafana	run08	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+oracle	grafana	run09	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
+oracle	grafana	run10	PASS 18/18 explored worlds satisfied the built-in atomicity invariant under a process kill, but it had no path to judge	
