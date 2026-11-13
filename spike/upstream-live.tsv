@@ -18,7 +18,7 @@
 # No reading date: a date would change every day and open a pull request every day.
 GothenburgBitFactory/timewarrior	778	open	Timewarrior - Commandline Time Tracking and Reporting	A crash between finalize_all's renames desyncs undo.data from the data files; undo then deletes the wrong interval	-	2026-08-12
 topydo/topydo	341	open	A powerful todo list application for the console, using the todo.txt format.	revert after an interrupted write can undo an older command, deleting tasks the interruption left intact	-	2026-08-14
-lfos/calcurse	529	open	A text-based calendar and scheduling application	Purge rewrites apts in place, so an interrupted purge can empty the file	-	2026-08-15
+lfos/calcurse	529	closed-completed	A text-based calendar and scheduling application	Purge rewrites apts in place, so an interrupted purge can empty the file	-	2026-08-15
 aspiers/stow	139	open	GNU Stow - mirror of savannah git repository occasionally with more bleeding-edge branches	Unfolding a tree removes the folded symlink before the real directory exists, so an interrupted stow leaves the already stowed package unreachable	140:open	2026-08-15
 alecthomas/devtodo	9	closed-completed	DevTodo (legacy)	The .todo database is truncated before it is rewritten, so an interrupted write loses every item	-	2026-08-15
 python-poetry/poetry	11019	closed-not_planned	Python packaging and dependency management made easy	In-place rewrite of pyproject.toml: an interruption between the truncating open and the write leaves the file empty	-	2026-08-22
@@ -26,7 +26,7 @@ pimalaya/himalaya	738	closed-completed	CLI to manage emails	maildir messages cop
 ImageMagick/ImageMagick	8939	open	ImageMagick is a free, open-source software suite for creating, editing, converting, and displaying images. It supports 200+ formats and offers powerful comman…	An interrupted in-place mogrify leaves no file at the original name (the content is at file~)	-	2026-09-05
 Exiv2/exiv2	9482	open	Image metadata library and tools	Metadata writes truncate the original in place: an interrupted exiv2 rm leaves a zero-byte image with no backup	9483:closed,9504:open	2026-09-05
 qpdf/qpdf	1773	closed-completed	qpdf: A content-preserving PDF document transformer	--replace-input leaves no file at the input's name if interrupted between its two renames	-	2026-09-04
-andreafrancia/trash-cli	414	open	Command line interface to the freedesktop.org trashcan.	A crash between the trashinfo write and the file move leaves an orphan trashinfo that every later trash-list reports	416:closed,428:closed	2026-09-04
+andreafrancia/trash-cli	414	open	Command line interface to the freedesktop.org trashcan.	A crash between the trashinfo write and the file move leaves an orphan trashinfo that every later trash-list reports	416:closed,428:closed,442:open	2026-09-04
 fonttools/fonttools	4170	closed-not_planned	A library to manipulate font files from Python.	subset --output-file naming the input leaves a zero-byte font when the write fails or is interrupted	-	2026-09-06
 beancount/beancount	1051	open	Beancount: Double-Entry Accounting from Text Files.	bean-format --in-place leaves a zero-byte ledger when the write fails, and bean-check accepts it	1054:closed,1069:open	2026-09-06
 asottile/pyupgrade	1101	closed-completed	A tool (and pre-commit hook) to automatically upgrade syntax for newer versions of the language.	A failed or interrupted run leaves the rewritten file at zero bytes	-	2026-09-06
@@ -38,7 +38,7 @@ rust-lang/cargo	17481	closed-not_planned	The Rust package manager	Cargo.lock is 
 aws/aws-cli	10648	open	Universal Command Line Interface for Amazon Web Services	aws configure set can leave the credentials file empty: it is rewritten in place	10649:open	2026-09-16
 neovim/neovim	41940	closed-completed	Vim-fork focused on extensibility and usability	ShaDa: vim_rename() removes main.shada before the rename; a kill in between loses history silently	42152:merged	2026-09-16
 ast-grep/ast-grep	2959	closed-completed	⚡A CLI tool for code structural search, lint and rewriting. Written in Rust	--update-all leaves a file at 0 bytes when interrupted between open and write	2995:merged	2026-09-22
-nbQA-dev/nbQA	908	open	Run ruff, isort, pyupgrade, mypy, pylint, flake8, and more on Jupyter Notebooks	nbqa black leaves the notebook truncated when writing it back fails	909:open	2026-09-28
+nbQA-dev/nbQA	908	closed-completed	Run ruff, isort, pyupgrade, mypy, pylint, flake8, and more on Jupyter Notebooks	nbqa black leaves the notebook truncated when writing it back fails	909:closed,911:merged	2026-09-28
 hashicorp/terraform	39299	closed-completed	Terraform enables you to safely and predictably create, change, and improve infrastructure. It is a source-available tool that codifies APIs into declarative c…	terraform fmt leaves a .tf file empty when its write fails or the process is killed before the write	39303:merged,39308:merged,39427:closed	2026-09-28
 helm/helm	32709	open	The Kubernetes Package Manager	helm repo remove leaves repositories.yaml empty when its write fails or the process is killed before the write	32829:open	2026-10-02
 tombi-toml/tombi	2265	closed-completed	TOML Formatter / Linter / Language Server	🐝 Issue: tombi format leaves the file empty when its write fails or the process is killed before the write	2266:merged	2026-10-02
